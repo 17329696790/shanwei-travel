@@ -1,0 +1,2206 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汕尾治愈之旅 | 清新马卡龙风旅游攻略</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --color-light-blue: #B5E6F5;
+            --color-light-pink: #FFD1DC;
+            --color-sand-white: #FFF9F0;
+            --color-sunset-yellow: #FFEAA7;
+            --color-accent-pink: #FF8EB4;
+            --color-accent-orange: #FFA96B;
+            --color-text-dark: #5A6D7C;
+            --color-text-light: #8A9BA8;
+            --border-radius: 20px;
+            --box-shadow: 0 8px 25px rgba(181, 230, 245, 0.2);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--color-sand-white);
+            color: var(--color-text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--color-light-blue);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-light-pink);
+            border-radius: 10px;
+        }
+        
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background: rgba(255, 249, 240, 0);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            transition: var(--transition);
+        }
+        
+        .navbar.scrolled {
+            background: rgba(255, 249, 240, 0.95);
+            box-shadow: 0 5px 15px rgba(181, 230, 245, 0.2);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--color-accent-pink);
+        }
+        
+        .logo-icon {
+            margin-right: 10px;
+            font-size: 28px;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 30px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--color-text-dark);
+            font-weight: 600;
+            font-size: 17px;
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+        }
+        
+        .nav-links a i {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        
+        .nav-links a:hover {
+            color: var(--color-accent-pink);
+            transform: translateY(-2px);
+        }
+        
+        .nav-links a.active {
+            color: var(--color-accent-pink);
+        }
+        
+        .hamburger {
+            display: none;
+            font-size: 24px;
+            color: var(--color-accent-pink);
+            cursor: pointer;
+        }
+        
+        /* 首页轮播 */
+        .hero-slider {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .slides-container {
+            height: 100%;
+            position: relative;
+        }
+        
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .slide.active {
+            opacity: 1;
+        }
+        
+        .slide-content {
+            text-align: center;
+            color: white;
+            background: rgba(255, 249, 240, 0.8);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            max-width: 700px;
+            margin: 0 20px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .slide-title {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: var(--color-accent-pink);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .slide-desc {
+            font-size: 20px;
+            color: var(--color-text-dark);
+            margin-bottom: 30px;
+        }
+        
+        .slide-btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: var(--color-light-pink);
+            color: var(--color-text-dark);
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 18px;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+        
+        .slide-btn:hover {
+            background: var(--color-accent-pink);
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255, 142, 180, 0.3);
+        }
+        
+        .slider-dots {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            margin: 0 10px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .dot.active {
+            background: white;
+            transform: scale(1.2);
+        }
+        
+        /* 欢迎弹窗 */
+        .welcome-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(181, 230, 245, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 1;
+            visibility: visible;
+            transition: all 0.5s ease;
+        }
+        
+        .welcome-modal.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: var(--border-radius);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(181, 230, 245, 0.5);
+            transform: scale(1);
+            transition: transform 0.5s ease;
+        }
+        
+        .modal-content.hidden {
+            transform: scale(0.8);
+        }
+        
+        .mazu-icon {
+            font-size: 80px;
+            color: var(--color-accent-pink);
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 28px;
+            color: var(--color-accent-pink);
+            margin-bottom: 20px;
+        }
+        
+        .modal-text {
+            font-size: 18px;
+            color: var(--color-text-dark);
+            margin-bottom: 30px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .modal-btn {
+            padding: 12px 30px;
+            border-radius: 50px;
+            border: none;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .modal-btn.primary {
+            background: var(--color-light-pink);
+            color: var(--color-text-dark);
+        }
+        
+        .modal-btn.secondary {
+            background: var(--color-light-blue);
+            color: var(--color-text-dark);
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 通用部分样式 */
+        .section {
+            padding: 100px 5%;
+            position: relative;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 42px;
+            margin-bottom: 60px;
+            color: var(--color-accent-pink);
+            position: relative;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--color-light-pink);
+            border-radius: 2px;
+        }
+        
+        /* 景点模块 */
+        .categories {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+        
+        .category-btn {
+            padding: 12px 25px;
+            margin: 0 10px 10px;
+            background: var(--color-light-blue);
+            border: none;
+            border-radius: 50px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 17px;
+            color: var(--color-text-dark);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .category-btn.active {
+            background: var(--color-light-pink);
+            color: var(--color-accent-pink);
+        }
+        
+        .category-btn.active:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+            width: 80%;
+            height: 3px;
+            background: var(--color-accent-pink);
+            border-radius: 1.5px;
+        }
+        
+        .category-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(181, 230, 245, 0.4);
+        }
+        
+        .attractions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        
+        .attraction-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .attraction-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(181, 230, 245, 0.3);
+        }
+        
+        .card-img {
+            height: 200px;
+            width: 100%;
+            object-fit: cover;
+        }
+        
+        .card-content {
+            padding: 20px;
+        }
+        
+        .card-title {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: var(--color-accent-pink);
+        }
+        
+        .card-desc {
+            color: var(--color-text-light);
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+        
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .tag {
+            padding: 5px 12px;
+            background: var(--color-light-blue);
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .tag.pink {
+            background: var(--color-light-pink);
+            color: var(--color-accent-pink);
+        }
+        
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .save-btn {
+            background: none;
+            border: none;
+            color: var(--color-text-light);
+            font-size: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .save-btn.saved {
+            color: var(--color-accent-pink);
+        }
+        
+        .save-btn:hover {
+            color: var(--color-accent-pink);
+            transform: scale(1.2);
+        }
+        
+        .photo-tips-btn {
+            background: var(--color-light-pink);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--color-text-dark);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .photo-tips-btn:hover {
+            background: var(--color-accent-pink);
+            color: white;
+        }
+        
+        /* 美食模块 */
+        .food-categories {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+        
+        .food-category {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 20px 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .food-category.active .food-icon {
+            background: var(--color-light-pink);
+            color: var(--color-accent-pink);
+        }
+        
+        .food-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--color-light-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-bottom: 15px;
+            color: var(--color-text-dark);
+            transition: var(--transition);
+        }
+        
+        .food-category:hover .food-icon {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(181, 230, 245, 0.3);
+        }
+        
+        .food-name {
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--color-text-dark);
+        }
+        
+        .food-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        
+        .food-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .food-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(181, 230, 245, 0.3);
+        }
+        
+        .food-img {
+            height: 180px;
+            width: 100%;
+            object-fit: cover;
+        }
+        
+        .food-content {
+            padding: 20px;
+        }
+        
+        .food-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: var(--color-accent-pink);
+        }
+        
+        .food-shop {
+            color: var(--color-text-light);
+            margin-bottom: 10px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .food-shop i {
+            margin-right: 8px;
+            color: var(--color-accent-orange);
+        }
+        
+        .food-desc {
+            color: var(--color-text-dark);
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+        
+        .food-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .want-btn {
+            background: var(--color-light-pink);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--color-text-dark);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .want-btn:hover {
+            background: var(--color-accent-pink);
+            color: white;
+        }
+        
+        /* 地图容器 */
+        .map-container {
+            height: 400px;
+            width: 100%;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin-bottom: 60px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        #food-map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        /* 行程模块 */
+        .itinerary-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        
+        .itinerary-tab {
+            padding: 15px 30px;
+            margin: 0 10px;
+            background: var(--color-light-blue);
+            border: none;
+            border-radius: 50px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 17px;
+            color: var(--color-text-dark);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .itinerary-tab.active {
+            background: var(--color-light-pink);
+            color: var(--color-accent-pink);
+        }
+        
+        .itinerary-tab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(181, 230, 245, 0.4);
+        }
+        
+        .itinerary-content {
+            display: none;
+        }
+        
+        .itinerary-content.active {
+            display: block;
+        }
+        
+        .day-plan {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .day-title {
+            font-size: 24px;
+            color: var(--color-accent-pink);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px dashed var(--color-light-blue);
+        }
+        
+        .plan-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .plan-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .plan-icon.attraction {
+            background: var(--color-light-blue);
+            color: #3D8BF2;
+        }
+        
+        .plan-icon.food {
+            background: var(--color-light-pink);
+            color: var(--color-accent-pink);
+        }
+        
+        .plan-icon.transport {
+            background: var(--color-sunset-yellow);
+            color: #E6B400;
+        }
+        
+        .plan-text {
+            flex: 1;
+        }
+        
+        .plan-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .plan-desc {
+            color: var(--color-text-light);
+            font-size: 14px;
+        }
+        
+        /* 交通住宿模块 */
+        .transport-types {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        
+        .transport-type {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 30px;
+        }
+        
+        .transport-icon {
+            width: 100px;
+            height: 100px;
+            background: var(--color-light-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: var(--color-text-dark);
+            transition: var(--transition);
+        }
+        
+        .transport-type:hover .transport-icon {
+            background: var(--color-light-pink);
+            transform: translateY(-5px);
+        }
+        
+        .transport-name {
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--color-text-dark);
+        }
+        
+        .tips-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+        
+        .tip-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+        
+        .tip-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(181, 230, 245, 0.3);
+        }
+        
+        .tip-icon {
+            font-size: 30px;
+            margin-bottom: 15px;
+            color: var(--color-accent-pink);
+        }
+        
+        .tip-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: var(--color-accent-pink);
+        }
+        
+        .tip-text {
+            color: var(--color-text-dark);
+            font-size: 15px;
+        }
+        
+        /* 互动彩蛋 */
+        .achievements-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 60px;
+        }
+        
+        .achievement {
+            width: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.5;
+            transition: var(--transition);
+        }
+        
+        .achievement.unlocked {
+            opacity: 1;
+        }
+        
+        .achievement-badge {
+            width: 80px;
+            height: 80px;
+            background: var(--color-light-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-bottom: 10px;
+            color: var(--color-text-dark);
+        }
+        
+        .achievement.unlocked .achievement-badge {
+            background: var(--color-light-pink);
+            color: var(--color-accent-pink);
+        }
+        
+        .achievement-name {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .comment-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .comment-title {
+            font-size: 24px;
+            color: var(--color-accent-pink);
+            margin-bottom: 20px;
+        }
+        
+        .comment-form {
+            margin-bottom: 30px;
+        }
+        
+        .comment-input {
+            width: 100%;
+            height: 100px;
+            padding: 15px;
+            border: 2px solid var(--color-light-blue);
+            border-radius: var(--border-radius);
+            font-family: 'Quicksand', sans-serif;
+            font-size: 16px;
+            resize: vertical;
+            margin-bottom: 15px;
+            transition: var(--transition);
+        }
+        
+        .comment-input:focus {
+            outline: none;
+            border-color: var(--color-light-pink);
+        }
+        
+        .comment-submit {
+            background: var(--color-light-pink);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--color-text-dark);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .comment-submit:hover {
+            background: var(--color-accent-pink);
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        .comments-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .comment-item {
+            background: var(--color-sand-white);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: var(--color-text-light);
+        }
+        
+        .comment-text {
+            color: var(--color-text-dark);
+        }
+        
+        /* 底部 */
+        footer {
+            background: var(--color-light-blue);
+            padding: 40px 5% 20px;
+            text-align: center;
+        }
+        
+        .footer-logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--color-accent-pink);
+            margin-bottom: 20px;
+        }
+        
+        .footer-text {
+            color: var(--color-text-dark);
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-accent-pink);
+            font-size: 18px;
+            transition: var(--transition);
+        }
+        
+        .social-icon:hover {
+            background: var(--color-light-pink);
+            transform: translateY(-5px);
+        }
+        
+        .copyright {
+            color: var(--color-text-light);
+            font-size: 14px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(90, 109, 124, 0.2);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .section-title {
+                font-size: 36px;
+            }
+            
+            .attractions-grid, .food-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 5%;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: rgba(255, 249, 240, 0.95);
+                backdrop-filter: blur(10px);
+                flex-direction: column;
+                align-items: center;
+                padding: 20px 0;
+                box-shadow: 0 10px 20px rgba(181, 230, 245, 0.2);
+                transform: translateY(-100%);
+                opacity: 0;
+                transition: var(--transition);
+            }
+            
+            .nav-links.active {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            
+            .nav-links li {
+                margin: 10px 0;
+            }
+            
+            .hamburger {
+                display: block;
+            }
+            
+            .slide-title {
+                font-size: 36px;
+            }
+            
+            .slide-desc {
+                font-size: 18px;
+            }
+            
+            .section-title {
+                font-size: 32px;
+            }
+            
+            .attractions-grid, .food-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
+            
+            .modal-btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .slide-title {
+                font-size: 28px;
+            }
+            
+            .slide-content {
+                padding: 20px;
+            }
+            
+            .section-title {
+                font-size: 28px;
+            }
+            
+            .day-plan {
+                padding: 20px;
+            }
+        }
+        
+        /* 淡入动画 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- 欢迎弹窗 -->
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="modal-content" id="modalContent">
+            <div class="mazu-icon">
+                <i class="fas fa-heart"></i>
+            </div>
+            <h2 class="modal-title">宝～ 汕尾超全打卡攻略来啦！</h2>
+            <p class="modal-text">一起解锁海与风的治愈之旅✨</p>
+            <div class="modal-buttons">
+                <button class="modal-btn primary" id="quickStartBtn">快速开始</button>
+                <button class="modal-btn secondary" id="customPlanBtn">定制行程</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="navbar" id="navbar">
+        <div class="logo">
+            <i class="fas fa-umbrella-beach logo-icon"></i>
+            <span>汕尾治愈之旅</span>
+        </div>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#home" class="active"><i class="fas fa-home"></i> 首页</a></li>
+            <li><a href="#attractions"><i class="fas fa-camera"></i> 景点打卡</a></li>
+            <li><a href="#food"><i class="fas fa-utensils"></i> 美食地图</a></li>
+            <li><a href="#itinerary"><i class="fas fa-route"></i> 行程规划</a></li>
+            <li><a href="#transport"><i class="fas fa-car"></i> 交通住宿</a></li>
+            <li><a href="#interactive"><i class="fas fa-star"></i> 我的收藏</a></li>
+        </ul>
+        <div class="hamburger" id="hamburger">
+            <i class="fas fa-bars"></i>
+        </div>
+    </nav>
+    
+    <!-- 首页轮播 -->
+    <section class="hero-slider" id="home">
+        <div class="slides-container">
+            <!-- 轮播图1 - 金町湾日落 -->
+            <div class="slide active" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('media/image2.jpg');">
+                <div class="slide-content">
+                    <h1 class="slide-title">金町湾日落</h1>
+                    <p class="slide-desc">沙滩细腻，晚霞温柔，是汕尾最治愈的日落观赏地</p>
+                    <a href="#attractions" class="slide-btn">探索景点</a>
+                </div>
+            </div>
+            
+            <!-- 轮播图2 - 风车岛双色海 -->
+            <div class="slide" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('media/image5.jpg');">
+                <div class="slide-content">
+                    <h1 class="slide-title">风车岛双色海</h1>
+                    <p class="slide-desc">连绵的白色风车与蓝绿色海水交织，仿佛置身童话世界</p>
+                    <a href="#attractions" class="slide-btn">探索景点</a>
+                </div>
+            </div>
+            
+            <!-- 轮播图3 - 海上古堡礁石 -->
+            <div class="slide" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('media/image4.jpg');">
+                <div class="slide-content">
+                    <h1 class="slide-title">海上古堡礁石</h1>
+                    <p class="slide-desc">沧桑古堡与壮阔海浪的完美结合，出片率100%</p>
+                    <a href="#attractions" class="slide-btn">探索景点</a>
+                </div>
+            </div>
+            
+            <!-- 轮播图4 - 玄武山禅意小径 -->
+            <div class="slide" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('media/image7.png');">
+                <div class="slide-content">
+                    <h1 class="slide-title">玄武山禅意小径</h1>
+                    <p class="slide-desc">粤东名刹，雨雾天气更有烟雨朦胧的仙境之感</p>
+                    <a href="#attractions" class="slide-btn">探索景点</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 轮播点 -->
+        <div class="slider-dots">
+            <div class="dot active" data-slide="0"></div>
+            <div class="dot" data-slide="1"></div>
+            <div class="dot" data-slide="2"></div>
+            <div class="dot" data-slide="3"></div>
+        </div>
+    </section>
+    
+    <!-- 景点打卡模块 -->
+    <section class="section" id="attractions">
+        <h2 class="section-title fade-in">景点打卡</h2>
+        
+        <div class="categories fade-in">
+            <button class="category-btn active" data-category="honghaiwan">红海湾片区</button>
+            <button class="category-btn" data-category="downtown">市区近郊</button>
+            <button class="category-btn" data-category="lufeng">陆丰周边</button>
+        </div>
+        
+        <!-- 景点网格 -->
+        <div class="attractions-grid fade-in" id="attractionsGrid">
+            <!-- 景点卡片将通过JavaScript动态生成 -->
+        </div>
+        
+        <!-- 网红打卡专区 -->
+        <h3 style="text-align: center; font-size: 28px; color: var(--color-accent-pink); margin-bottom: 40px;" class="fade-in">出片TOP5推荐</h3>
+        <div class="attractions-grid fade-in" id="topAttractions">
+            <!-- 网红景点卡片将通过JavaScript动态生成 -->
+        </div>
+    </section>
+    
+    <!-- 美食打卡模块 -->
+    <section class="section" id="food" style="background-color: rgba(255, 249, 240, 0.5);">
+        <h2 class="section-title fade-in">美食地图</h2>
+        
+        <div class="food-categories fade-in">
+            <div class="food-category active" data-food-category="seafood">
+                <div class="food-icon">
+                    <i class="fas fa-fish"></i>
+                </div>
+                <span class="food-name">海鲜盛宴</span>
+            </div>
+            <div class="food-category" data-food-category="snacks">
+                <div class="food-icon">
+                    <i class="fas fa-cookie-bite"></i>
+                </div>
+                <span class="food-name">特色小吃</span>
+            </div>
+            <div class="food-category" data-food-category="teahouse">
+                <div class="food-icon">
+                    <i class="fas fa-mug-hot"></i>
+                </div>
+                <span class="food-name">早茶夜茶</span>
+            </div>
+        </div>
+        
+        <!-- 美食网格 -->
+        <div class="food-grid fade-in" id="foodGrid">
+            <!-- 美食卡片将通过JavaScript动态生成 -->
+        </div>
+        
+        <!-- 美食地图 -->
+        <h3 style="text-align: center; font-size: 28px; color: var(--color-accent-pink); margin-bottom: 40px;" class="fade-in">美食聚集地</h3>
+        <div class="map-container fade-in">
+            <div id="food-map"></div>
+        </div>
+        
+        <!-- 夜宵时间表 -->
+        <h3 style="text-align: center; font-size: 28px; color: var(--color-accent-pink); margin-bottom: 40px;" class="fade-in">二马路夜宵时间表</h3>
+        <div class="day-plan fade-in">
+            <div class="plan-item">
+                <div class="plan-icon food">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="plan-text">
+                    <div class="plan-title">21:00 杯杯鲜果汁出摊</div>
+                    <div class="plan-desc">鲜榨水果冰，清凉解渴，夜宵必备</div>
+                </div>
+            </div>
+            <div class="plan-item">
+                <div class="plan-icon food">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="plan-text">
+                    <div class="plan-title">20:30 各种海鲜大排档营业</div>
+                    <div class="plan-desc">椒盐濑尿虾、蒜蓉蒸扇贝、炒蟹等</div>
+                </div>
+            </div>
+            <div class="plan-item">
+                <div class="plan-icon food">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="plan-text">
+                    <div class="plan-title">08:00 芬芳牛腩店开门</div>
+                    <div class="plan-desc">本地人最爱的早餐店之一</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 行程规划模块 -->
+    <section class="section" id="itinerary">
+        <h2 class="section-title fade-in">行程规划</h2>
+        
+        <div class="itinerary-tabs fade-in">
+            <button class="itinerary-tab active" data-itinerary="2day">2日休闲游</button>
+            <button class="itinerary-tab" data-itinerary="7day">7日深度游</button>
+        </div>
+        
+        <!-- 2日游行程 -->
+        <div class="itinerary-content active fade-in" id="itinerary2day">
+            <!-- 行程将通过JavaScript动态生成 -->
+        </div>
+        
+        <!-- 7日游行程 -->
+        <div class="itinerary-content fade-in" id="itinerary7day">
+            <!-- 行程将通过JavaScript动态生成 -->
+        </div>
+    </section>
+    
+    <!-- 交通住宿模块 -->
+    <section class="section" id="transport" style="background-color: rgba(181, 230, 245, 0.1);">
+        <h2 class="section-title fade-in">交通住宿</h2>
+        
+        <div class="transport-types fade-in">
+            <div class="transport-type">
+                <div class="transport-icon">
+                    <i class="fas fa-train"></i>
+                </div>
+                <span class="transport-name">高铁出行</span>
+                <p style="text-align: center; margin-top: 10px; max-width: 200px;">广州至汕尾站约1.5小时，市区打车或租车自驾</p>
+            </div>
+            <div class="transport-type">
+                <div class="transport-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+                <span class="transport-name">自驾/包车</span>
+                <p style="text-align: center; margin-top: 10px; max-width: 200px;">红海湾、陆丰景点较分散，建议包车或自驾游玩</p>
+            </div>
+        </div>
+        
+        <!-- 注意事项 -->
+        <h3 style="text-align: center; font-size: 28px; color: var(--color-accent-pink); margin-top: 80px; margin-bottom: 40px;" class="fade-in">少女贴心小贴士</h3>
+        <div class="tips-container fade-in">
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <h4 class="tip-title">海边防晒</h4>
+                <p class="tip-text">海边紫外线超强，帽子 + 墨镜 + 防晒霜缺一不可呀～</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <h4 class="tip-title">海鲜避坑</h4>
+                <p class="tip-text">吃海鲜可提前问价，选择明码标价的店家更安心</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <i class="fas fa-cloud-sun"></i>
+                </div>
+                <h4 class="tip-title">天气关注</h4>
+                <p class="tip-text">关注天气，台风期部分岛屿可能关闭，出行前查好哦</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h4 class="tip-title">错峰出行</h4>
+                <p class="tip-text">周末红海湾人较多，建议工作日前往体验更佳</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 互动彩蛋模块 -->
+    <section class="section" id="interactive">
+        <h2 class="section-title fade-in">互动彩蛋</h2>
+        
+        <!-- 打卡成就 -->
+        <h3 style="text-align: center; font-size: 28px; color: var(--color-accent-pink); margin-bottom: 40px;" class="fade-in">打卡成就徽章</h3>
+        <div class="achievements-container fade-in">
+            <div class="achievement unlocked" id="badge1">
+                <div class="achievement-badge">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <span class="achievement-name">风车岛拍照达人</span>
+            </div>
+            <div class="achievement" id="badge2">
+                <div class="achievement-badge">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <span class="achievement-name">二马路夜宵王者</span>
+            </div>
+            <div class="achievement" id="badge3">
+                <div class="achievement-badge">
+                    <i class="fas fa-umbrella-beach"></i>
+                </div>
+                <span class="achievement-name">金町湾日落收藏家</span>
+            </div>
+            <div class="achievement" id="badge4">
+                <div class="achievement-badge">
+                    <i class="fas fa-fish"></i>
+                </div>
+                <span class="achievement-name">海鲜美食家</span>
+            </div>
+        </div>
+        
+        <!-- 留言区 -->
+        <div class="comment-section fade-in">
+            <h3 class="comment-title">汕尾旅行碎碎念</h3>
+            <div class="comment-form">
+                <textarea class="comment-input" placeholder="分享你的汕尾打卡体验吧～ 🌊🍤✨" id="commentInput"></textarea>
+                <button class="comment-submit" id="commentSubmit">发布留言</button>
+            </div>
+            <div class="comments-list" id="commentsList">
+                <!-- 留言将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </section>
+    
+    <!-- 底部 -->
+    <footer>
+        <div class="footer-logo">
+            <i class="fas fa-umbrella-beach"></i> 汕尾治愈之旅
+        </div>
+        <p class="footer-text">一个专为少女心打造的汕尾旅游攻略网站，希望带给你清新治愈的旅行灵感～</p>
+        <!-- <div class="social-icons">
+            <a href="#" class="social-icon"><i class="fab fa-weixin"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-douyin"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-xiaohongshu"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-weibo"></i></a>
+        </div> -->
+        <div class="copyright">
+            &copy; 2026 汕尾治愈之旅 | 清新马卡龙风旅游攻略
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 网站数据 - 使用文档中的图片
+        const attractionsData = {
+            honghaiwan: [
+                {
+                    id: 1,
+                    name: "红海湾旅游区",
+                    desc: "水清沙白，适合游泳晒太阳",
+                    image: "media/image11.jpg", // 使用南海观音寺图片
+                    tags: ["游泳", "沙滩", "日光浴"],
+                    isTop: true
+                },
+                {
+                    id: 2,
+                    name: "南海观音寺",
+                    desc: "位于海边礁石上，景观壮阔",
+                    image: "media/image3.jpg",
+                    tags: ["寺庙", "礁石", "海景"],
+                    isTop: true
+                },
+                {
+                    id: 3,
+                    name: "海上古堡",
+                    desc: "古堡与礁石海浪结合，非常出片",
+                    image: "media/image4.jpg",
+                    tags: ["古堡", "拍照", "网红"],
+                    isTop: true
+                },
+                {
+                    id: 4,
+                    name: "风车岛",
+                    desc: "连绵白色风车群+浅滩，拍照出片",
+                    image: "media/image5.jpg",
+                    tags: ["风车", "拍照", "海岛"],
+                    isTop: true
+                },
+                {
+                    id: 5,
+                    name: "龟龄岛",
+                    desc: "需乘船前往，适合露营、赶海",
+                    image: "media/image6.jpg",
+                    tags: ["露营", "赶海", "海岛"],
+                    isTop: true
+                }
+            ],
+            downtown: [
+                {
+                    id: 6,
+                    name: "凤山祖庙",
+                    desc: "妈祖文化圣地，登塔可俯瞰汕尾港全景",
+                    image: "media/image1.jpg",
+                    tags: ["妈祖", "寺庙", "全景"],
+                    isTop: false
+                },
+                {
+                    id: 7,
+                    name: "汕尾博物馆",
+                    desc: "了解汕尾历史、渔家文化",
+                    image: "media/image9.jpg", // 使用金町湾图片代替
+                    tags: ["博物馆", "文化", "历史"],
+                    isTop: false
+                },
+                {
+                    id: 8,
+                    name: "金町湾",
+                    desc: "滨海度假区，沙滩细腻，适合看日落",
+                    image: "media/image2.jpg",
+                    tags: ["沙滩", "日落", "度假"],
+                    isTop: true
+                },
+                {
+                    id: 9,
+                    name: "品清湖",
+                    desc: "中国最大潟湖，傍晚环湖骑行很惬意",
+                    image: "media/image10.jpg", // 使用金町湾图片代替
+                    tags: ["潟湖", "骑行", "散步"],
+                    isTop: false
+                }
+            ],
+            lufeng: [
+                {
+                    id: 10,
+                    name: "玄武山旅游区",
+                    desc: "粤东名刹，融合宗教与海滨风光",
+                    image: "media/image7.png",
+                    tags: ["寺庙", "祈福", "海滨"],
+                    isTop: true
+                },
+                {
+                    id: 11,
+                    name: "碣石湾",
+                    desc: "人少清净，适合探访渔村风情",
+                    image: "media/image8.jpg",
+                    tags: ["渔村", "海湾", "安静"],
+                    isTop: false
+                }
+            ]
+        };
+
+        const foodData = {
+            seafood: [
+                {
+                    id: 1,
+                    name: "椒盐濑尿虾",
+                    shop: "丰富大排档",
+                    desc: "外酥里嫩，咸香可口，海鲜必点",
+                    image: "media/image4.jpg" // 使用古堡图片代替
+                },
+                {
+                    id: 2,
+                    name: "清蒸海鱼",
+                    shop: "西渔市大排档",
+                    desc: "原汁原味，鲜嫩无比，保留海洋的味道",
+                    image: "media/image5.jpg" // 使用风车岛图片代替
+                },
+                {		
+                    id: 3,
+                    name: "蒜蓉蒸扇贝",
+                    shop: "红海湾海鲜大排档",
+                    desc: "蒜香浓郁，扇贝鲜甜，一口一个超满足",
+                    image: "media/image6.jpg" // 使用龟龄岛图片代替
+                }
+            ],
+            snacks: [
+                {
+                    id: 4,
+                    name: "薄饼",
+                    shop: "林舜杰薄饼店",
+                    desc: "咸口馅料超丰富 / 甜口糖葱香，二马路老店必冲！",
+                    image: "media/image1.jpg" // 使用凤山祖庙图片代替
+                },
+                {
+                    id: 5,
+                    name: "菜茶",
+                    shop: "渔村大路老店",
+                    desc: "蔬菜+炒米+热汤，本地人节庆必吃",
+                    image: "media/image2.jpg" // 使用金町湾图片代替
+                },
+                {
+                    id: 6,
+                    name: "九毛膏",
+                    shop: "翁林甜品",
+                    desc: "清凉甜品，夏日消暑神器",
+                    image: "media/image3.jpg" // 使用南海观音寺图片代替
+                }
+            ],
+            teahouse: [
+                {
+                    id: 7,
+                    name: "早茶点心",
+                    shop: "市区茶楼",
+                    desc: "体验汕尾慢生活，虾饺烧卖肠粉都不错",
+                    image: "media/image7.png" // 使用玄武山图片代替
+                },
+                {
+                    id: 8,
+                    name: "夜茶小食",
+                    shop: "二马路附近茶楼",
+                    desc: "晚上9点后，本地人的夜生活刚刚开始",
+                    image: "media/image8.jpg" // 使用碣石湾图片代替
+                }
+            ]
+        };
+
+        const itineraryData = {
+            "2day": [
+                {
+                    day: "Day1",
+                    title: "市区文化体验",
+                    items: [
+                        { type: "attraction", title: "凤山祖庙", desc: "妈祖文化圣地，登塔俯瞰汕尾港全景" },
+                        { type: "attraction", title: "汕尾博物馆", desc: "了解汕尾历史与渔家文化" },
+                        { type: "food", title: "二马路美食街", desc: "午餐品尝本地特色小吃" },
+                        { type: "attraction", title: "品清湖骑行", desc: "傍晚环湖骑行，欣赏潟湖美景" },
+                        { type: "food", title: "海边街海鲜晚餐", desc: "新鲜海鲜大餐" }
+                    ]
+                },
+                {
+                    day: "Day2",
+                    title: "红海湾一日游",
+                    items: [
+                        { type: "transport", title: "前往红海湾", desc: "市区到红海湾车程约40分钟" },
+                        { type: "attraction", title: "红海湾游泳", desc: "水清沙白，享受阳光海滩" },
+                        { type: "attraction", title: "南海观音寺", desc: "海边礁石上的壮阔景观" },
+                        { type: "attraction", title: "风车岛拍照", desc: "白色风车群与双色海" },
+                        { type: "food", title: "红海湾大排档", desc: "晚餐品尝新鲜海鲜" }
+                    ]
+                }
+            ],
+            "7day": [
+                {
+                    day: "Day1",
+                    title: "抵达汕尾市区",
+                    items: [
+                        { type: "transport", title: "抵达汕尾", desc: "高铁至汕尾站，入住酒店" },
+                        { type: "attraction", title: "金町湾沙滩漫步", desc: "欣赏日落，放松心情" },
+                        { type: "food", title: "二马路夜宵", desc: "体验汕尾夜宵文化" }
+                    ]
+                },
+                {
+                    day: "Day2",
+                    title: "市区文化体验",
+                    items: [
+                        { type: "attraction", title: "凤山祖庙", desc: "妈祖文化圣地" },
+                        { type: "attraction", title: "汕尾博物馆", desc: "了解汕尾历史" },
+                        { type: "attraction", title: "品清湖骑行", desc: "傍晚环湖骑行" },
+                        { type: "food", title: "渔村大路小吃", desc: "品尝传统小吃" }
+                    ]
+                },
+                {
+                    day: "Day3",
+                    title: "红海湾深度游",
+                    items: [
+                        { type: "attraction", title: "红海湾游泳", desc: "享受阳光海滩" },
+                        { type: "attraction", title: "南海观音寺", desc: "海边礁石景观" },
+                        { type: "attraction", title: "风车岛拍照", desc: "风车与海的绝美画面" },
+                        { type: "food", title: "红海湾大排档", desc: "海鲜晚餐" }
+                    ]
+                },
+                {
+                    day: "Day4",
+                    title: "龟龄岛探险",
+                    items: [
+                        { type: "transport", title: "乘船前往龟龄岛", desc: "提前预约船家" },
+                        { type: "attraction", title: "龟龄岛探索", desc: "露营、赶海、拍照" },
+                        { type: "attraction", title: "返回市区", desc: "傍晚乘船返回" }
+                    ]
+                },
+                {
+                    day: "Day5",
+                    title: "陆丰文化线",
+                    items: [
+                        { type: "transport", title: "前往陆丰", desc: "车程约1小时" },
+                        { type: "attraction", title: "玄武山祈福", desc: "粤东名刹" },
+                        { type: "attraction", title: "碣石湾漫步", desc: "探访古渔村" },
+                        { type: "transport", title: "返回市区", desc: "晚上返回市区住宿" }
+                    ]
+                },
+                {
+                    day: "Day6",
+                    title: "休闲放松",
+                    items: [
+                        { type: "food", title: "市区茶楼早茶", desc: "体验慢生活" },
+                        { type: "attraction", title: "自由活动", desc: "可选金町湾水上项目或购物" },
+                        { type: "food", title: "二马路最后一餐", desc: "品尝未尝试的美食" }
+                    ]
+                },
+                {
+                    day: "Day7",
+                    title: "返程",
+                    items: [
+                        { type: "food", title: "购买特产", desc: "紫菜、鱼干、绿豆饼等" },
+                        { type: "transport", title: "前往高铁站", desc: "结束愉快的汕尾之旅" }
+                    ]
+                }
+            ]
+        };
+
+        // 初始化函数
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化轮播图
+            initSlider();
+            
+            // 初始化景点数据
+            renderAttractions('honghaiwan');
+            renderTopAttractions();
+            
+            // 初始化美食数据
+            renderFood('seafood');
+            
+            // 初始化行程数据
+            renderItinerary('2day');
+            
+            // 初始化地图
+            initMap();
+            
+            // 初始化滚动监听
+            initScrollEffects();
+            
+            // 初始化事件监听器
+            initEventListeners();
+        });
+        
+        // 轮播图初始化
+        function initSlider() {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.dot');
+            let currentSlide = 0;
+            
+            // 轮播函数
+            function showSlide(index) {
+                // 隐藏所有幻灯片
+                slides.forEach(slide => slide.classList.remove('active'));
+                dots.forEach(dot => dot.classList.remove('active'));
+                
+                // 显示当前幻灯片
+                slides[index].classList.add('active');
+                dots[index].classList.add('active');
+                
+                currentSlide = index;
+            }
+            
+            // 自动轮播
+            setInterval(() => {
+                let nextSlide = (currentSlide + 1) % slides.length;
+                showSlide(nextSlide);
+            }, 5000);
+            
+            // 点击轮播点切换
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    showSlide(index);
+                });
+            });
+        }
+        
+        // 渲染景点
+        function renderAttractions(category) {
+            const container = document.getElementById('attractionsGrid');
+            container.innerHTML = '';
+            
+            const attractions = attractionsData[category];
+            
+            attractions.forEach(attraction => {
+                const card = document.createElement('div');
+                card.className = 'attraction-card fade-in';
+                card.innerHTML = `
+                    <img src="${attraction.image}" alt="${attraction.name}" class="card-img">
+                    <div class="card-content">
+                        <h3 class="card-title">${attraction.name}</h3>
+                        <p class="card-desc">${attraction.desc}</p>
+                        <div class="card-tags">
+                            ${attraction.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                            ${attraction.isTop ? '<span class="tag pink">必拍</span>' : ''}
+                        </div>
+                        <div class="card-footer">
+                            <button class="save-btn" data-id="${attraction.id}">
+                                <i class="far fa-heart"></i>
+                            </button>
+                            <button class="photo-tips-btn">一键存拍照教程</button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            // 添加淡入动画
+            setTimeout(() => {
+                document.querySelectorAll('.attraction-card').forEach(card => {
+                    card.classList.add('visible');
+                });
+            }, 100);
+            
+            // 添加收藏功能
+            document.querySelectorAll('.save-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const icon = this.querySelector('i');
+                    if (icon.classList.contains('far')) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        this.classList.add('saved');
+                        // 解锁成就
+                        document.getElementById('badge3').classList.add('unlocked');
+                    } else {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        this.classList.remove('saved');
+                    }
+                });
+            });
+            
+        // 添加拍照教程功能
+            document.querySelectorAll('.photo-tips-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    alert('拍照教程已保存到相册！可以分享到微信/抖音哦～');
+                });
+            });
+        }
+        
+        // 渲染网红景点
+        function renderTopAttractions() {
+            const container = document.getElementById('topAttractions');
+            container.innerHTML = '';
+            
+            // 获取所有网红景点
+            const topAttractions = [];
+            for (const category in attractionsData) {
+                attractionsData[category].forEach(attraction => {
+                    if (attraction.isTop) {
+                        topAttractions.push(attraction);
+                    }
+                });
+            }
+            
+            // 只取前5个
+            const top5 = topAttractions.slice(0, 5);
+            
+            top5.forEach(attraction => {
+                const card = document.createElement('div');
+                card.className = 'attraction-card fade-in';
+                card.innerHTML = `
+                    <img src="${attraction.image}" alt="${attraction.name}" class="card-img">
+                    <div class="card-content">
+                        <h3 class="card-title">${attraction.name}</h3>
+                        <p class="card-desc">${attraction.desc}</p>
+                        <div class="card-tags">
+                            ${attraction.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                            <span class="tag pink">必拍</span>
+                        </div>
+                        <div class="card-footer">
+                            <button class="save-btn" data-id="${attraction.id}">
+                                <i class="far fa-heart"></i>
+                            </button>
+                            <button class="photo-tips-btn">一键存拍照教程</button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            // 添加淡入动画
+            setTimeout(() => {
+                document.querySelectorAll('#topAttractions .attraction-card').forEach(card => {
+                    card.classList.add('visible');
+                });
+            }, 100);
+        }
+        
+        // 渲染美食
+        function renderFood(category) {
+            const container = document.getElementById('foodGrid');
+            container.innerHTML = '';
+            
+            const foods = foodData[category];
+            
+            foods.forEach(food => {
+                const card = document.createElement('div');
+                card.className = 'food-card fade-in';
+                card.innerHTML = `
+                    <img src="${food.image}" alt="${food.name}" class="food-img">
+                    <div class="food-content">
+                        <h3 class="food-title">${food.name}</h3>
+                        <p class="food-shop"><i class="fas fa-store"></i> ${food.shop}</p>
+                        <p class="food-desc">${food.desc}</p>
+                        <div class="food-card-footer">
+                            <button class="want-btn">想吃</button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            // 添加淡入动画
+            setTimeout(() => {
+                document.querySelectorAll('.food-card').forEach(card => {
+                    card.classList.add('visible');
+                });
+            }, 100);
+            
+            // 添加"想吃"功能
+            document.querySelectorAll('.want-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (this.textContent === '想吃') {
+                        this.textContent = '已加入清单';
+                        this.style.background = 'var(--color-accent-pink)';
+                        this.style.color = 'white';
+                        // 解锁成就
+                        document.getElementById('badge4').classList.add('unlocked');
+                    } else {
+                        this.textContent = '想吃';
+                        this.style.background = 'var(--color-light-pink)';
+                        this.style.color = 'var(--color-text-dark)';
+                    }
+                });
+            });
+        }
+        
+        // 渲染行程
+        function renderItinerary(type) {
+            const container = document.getElementById(`itinerary${type}`);
+            container.innerHTML = '';
+            
+            const itinerary = itineraryData[type];
+            
+            itinerary.forEach(day => {
+                const dayPlan = document.createElement('div');
+                dayPlan.className = 'day-plan fade-in';
+                
+                let itemsHTML = '';
+                day.items.forEach(item => {
+                    let iconClass = '';
+                    if (item.type === 'attraction') iconClass = 'attraction';
+                    else if (item.type === 'food') iconClass = 'food';
+                    else if (item.type === 'transport') iconClass = 'transport';
+                    
+                    itemsHTML += `
+                        <div class="plan-item">
+                            <div class="plan-icon ${iconClass}">
+                                <i class="fas fa-${item.type === 'attraction' ? 'camera' : item.type === 'food' ? 'utensils' : 'car'}"></i>
+                            </div>
+                            <div class="plan-text">
+                                <div class="plan-title">${item.title}</div>
+                                <div class="plan-desc">${item.desc}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                dayPlan.innerHTML = `
+                    <h3 class="day-title">${day.day}：${day.title}</h3>
+                    ${itemsHTML}
+                `;
+                
+                container.appendChild(dayPlan);
+            });
+            
+            // 添加淡入动画
+            setTimeout(() => {
+                document.querySelectorAll(`#itinerary${type} .day-plan`).forEach(plan => {
+                    plan.classList.add('visible');
+                });
+            }, 100);
+        }
+        
+        // 初始化地图
+        function initMap() {
+            // 创建地图
+            const map = L.map('food-map').setView([22.8, 115.4], 12);
+            
+            // 添加地图图层
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // 添加美食地点标记
+            const foodLocations = [
+                { name: "二马路美食街", coords: [22.783, 115.365], type: "food" },
+                { name: "渔村大路", coords: [22.788, 115.372], type: "food" },
+                { name: "红海湾大排档", coords: [22.67, 115.61], type: "food" },
+                { name: "丰富大排档", coords: [22.785, 115.368], type: "seafood" },
+                { name: "林舜杰薄饼店", coords: [22.782, 115.363], type: "snacks" }
+            ];
+            
+            // 自定义图标
+            const foodIcon = L.divIcon({
+                html: '<i class="fas fa-utensils" style="color: #FF8EB4; font-size: 24px;"></i>',
+                className: 'food-marker',
+                iconSize: [30, 30]
+            });
+            
+            const seafoodIcon = L.divIcon({
+                html: '<i class="fas fa-fish" style="color: #3D8BF2; font-size: 24px;"></i>',
+                className: 'seafood-marker',
+                iconSize: [30, 30]
+            });
+            
+            // 添加标记
+            foodLocations.forEach(location => {
+                const icon = location.type === 'seafood' ? seafoodIcon : foodIcon;
+                const marker = L.marker(location.coords, { icon: icon }).addTo(map);
+                
+                marker.bindPopup(`
+                    <div style="font-family: 'Quicksand', sans-serif;">
+                        <h3 style="color: #FF8EB4; margin-bottom: 5px;">${location.name}</h3>
+                        <p style="color: #5A6D7C; margin-bottom: 5px;">${location.type === 'seafood' ? '海鲜大排档' : location.type === 'snacks' ? '特色小吃店' : '美食聚集地'}</p>
+                        <p style="color: #8A9BA8; font-size: 14px;">点击查看更多详情</p>
+                    </div>
+                `);
+            });
+        }
+        
+        // 初始化滚动效果
+        function initScrollEffects() {
+            // 导航栏滚动效果
+            window.addEventListener('scroll', function() {
+                const navbar = document.getElementById('navbar');
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+                
+                // 淡入动画
+                const fadeElements = document.querySelectorAll('.fade-in');
+                fadeElements.forEach(element => {
+                    const elementTop = element.getBoundingClientRect().top;
+                    const elementVisible = 150;
+                    
+                    if (elementTop < window.innerHeight - elementVisible) {
+                        element.classList.add('visible');
+                    }
+                });
+            });
+            
+            // 初始触发一次
+            window.dispatchEvent(new Event('scroll'));
+        }
+        
+        // 初始化事件监听器
+        function initEventListeners() {
+            // 导航栏汉堡菜单
+            const hamburger = document.getElementById('hamburger');
+            const navLinks = document.getElementById('navLinks');
+            
+            hamburger.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                hamburger.querySelector('i').classList.toggle('fa-bars');
+                hamburger.querySelector('i').classList.toggle('fa-times');
+            });
+            
+            // 关闭欢迎弹窗
+            const welcomeModal = document.getElementById('welcomeModal');
+            const modalContent = document.getElementById('modalContent');
+            const quickStartBtn = document.getElementById('quickStartBtn');
+            const customPlanBtn = document.getElementById('customPlanBtn');
+            
+            quickStartBtn.addEventListener('click', () => {
+                modalContent.classList.add('hidden');
+                setTimeout(() => {
+                    welcomeModal.classList.add('hidden');
+                    // 滚动到景点部分
+                    document.getElementById('attractions').scrollIntoView({ behavior: 'smooth' });
+                }, 300);
+            });
+            
+            customPlanBtn.addEventListener('click', () => {
+                modalContent.classList.add('hidden');
+                setTimeout(() => {
+                    welcomeModal.classList.add('hidden');
+                    // 滚动到行程部分
+                    document.getElementById('itinerary').scrollIntoView({ behavior: 'smooth' });
+                }, 300);
+            });
+            
+            // 景点分类切换
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 移除其他按钮的active类
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    // 添加当前按钮的active类
+                    this.classList.add('active');
+                    // 渲染对应分类的景点
+                    const category = this.getAttribute('data-category');
+                    renderAttractions(category);
+                });
+            });
+            
+            // 美食分类切换
+            document.querySelectorAll('.food-category').forEach(category => {
+                category.addEventListener('click', function() {
+                    // 移除其他分类的active类
+                    document.querySelectorAll('.food-category').forEach(c => c.classList.remove('active'));
+                    // 添加当前分类的active类
+                    this.classList.add('active');
+                    // 渲染对应分类的美食
+                    const foodCategory = this.getAttribute('data-food-category');
+                    renderFood(foodCategory);
+                });
+            });
+            
+            // 行程标签切换
+            document.querySelectorAll('.itinerary-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 移除其他标签的active类
+                    document.querySelectorAll('.itinerary-tab').forEach(t => t.classList.remove('active'));
+                    // 添加当前标签的active类
+                    this.classList.add('active');
+                    // 隐藏所有行程内容
+                    document.querySelectorAll('.itinerary-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    // 显示对应行程内容
+                    const itineraryType = this.getAttribute('data-itinerary');
+                    document.getElementById(`itinerary${itineraryType}`).classList.add('active');
+                    renderItinerary(itineraryType);
+                });
+            });
+            
+            // 导航链接点击
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 移除所有active类
+                    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+                    // 添加当前active类
+                    this.classList.add('active');
+                    
+                    // 关闭汉堡菜单（移动端）
+                    if (window.innerWidth <= 768) {
+                        navLinks.classList.remove('active');
+                        hamburger.querySelector('i').classList.remove('fa-times');
+                        hamburger.querySelector('i').classList.add('fa-bars');
+                    }
+                    
+                    // 滚动到对应部分
+                    const targetId = this.getAttribute('href').substring(1);
+                    document.getElementById(targetId).scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+            
+            // 留言提交
+            const commentSubmit = document.getElementById('commentSubmit');
+            const commentInput = document.getElementById('commentInput');
+            const commentsList = document.getElementById('commentsList');
+            
+            // 添加示例留言
+            const exampleComments = [
+                { user: "小海浪", time: "2023-10-15", text: "风车岛真的太美了！白色风车和蓝色海水简直是绝配，拍照超出片！🌊", emoji: "📸" },
+                { user: "海鲜爱好者", time: "2023-10-10", text: "二马路的夜宵太棒了，杯杯鲜果汁好好喝，海鲜也新鲜！", emoji: "🍤" }
+            ];
+            
+            exampleComments.forEach(comment => {
+                addComment(comment.user, comment.time, comment.text, comment.emoji);
+            });
+            
+            commentSubmit.addEventListener('click', function() {
+                const commentText = commentInput.value.trim();
+                if (commentText) {
+                    const now = new Date();
+                    const timeString = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+                    const user = "游客" + Math.floor(Math.random() * 1000);
+                    const emojis = ["🌊", "🍤", "📸", "✨", "❤️", "🏖️"];
+                    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                    
+                    addComment(user, timeString, commentText, randomEmoji);
+                    commentInput.value = "";
+                    
+                    // 滚动到最新留言
+                    commentsList.scrollTop = commentsList.scrollHeight;
+                }
+            });
+            
+            // 添加留言函数
+            function addComment(user, time, text, emoji) {
+                const commentItem = document.createElement('div');
+                commentItem.className = 'comment-item';
+                commentItem.innerHTML = `
+                    <div class="comment-header">
+                        <span>${user}</span>
+                        <span>${time} ${emoji}</span>
+                    </div>
+                    <div class="comment-text">${text}</div>
+                `;
+                commentsList.appendChild(commentItem);
+            }
+            
+            // 景点卡片点击展开详情（模拟）
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.attraction-card')) {
+                    const card = e.target.closest('.attraction-card');
+                    const title = card.querySelector('.card-title').textContent;
+                    alert(`即将打开「${title}」的详情页，包含多图轮播、拍照攻略、打卡点清单和周边推荐～\n\n（此功能在完整版中实现）`);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+<!-- 微信分享优化 -->
+<script>
+    // 微信分享配置
+    const shareConfig = {
+        title: '汕尾治愈之旅 | 清新马卡龙风旅游攻略',
+        desc: '专为少女心打造的汕尾旅游攻略，一起来解锁海与风的治愈之旅吧～',
+        imgUrl: 'media/image2.jpeg', // 分享缩略图
+        link: window.location.href
+    };
+    
+    // 分享按钮
+    const shareBtn = document.createElement('button');
+    shareBtn.innerHTML = '<i class="fas fa-share-alt"></i> 分享给朋友';
+    shareBtn.style.cssText = 'position: fixed; bottom: 20px; left: 20px; background: var(--color-accent-pink); color: white; border: none; padding: 12px 20px; border-radius: 50px; font-family: inherit; font-weight: 600; z-index: 1000; box-shadow: 0 4px 12px rgba(255,142,180,0.3);';
+    
+    document.body.appendChild(shareBtn);
+    
+    shareBtn.addEventListener('click', function() {
+        if (navigator.share) {
+            // 支持Web Share API的设备
+            navigator.share({
+                title: shareConfig.title,
+                text: shareConfig.desc,
+                url: shareConfig.link
+            });
+        } else {
+            // 复制链接到剪贴板
+            navigator.clipboard.writeText(shareConfig.link).then(() => {
+                alert('链接已复制到剪贴板！可以粘贴到微信发送给朋友啦～');
+            });
+        }
+    });
+</script>
